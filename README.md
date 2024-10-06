@@ -1,5 +1,7 @@
 # 🛠️ Jenkins Jedi CICD 🌟
 
+![Preview](./Module%204%20Continuous%20Integration%20using%20Jenkins%20for%20DevOps.gif)
+
 Welcome to **Jenkins-Jedi-CICD**! If you're looking to master Continuous Integration and Continuous Deployment (CICD) using Jenkins, you've arrived at the Jedi temple of automation. ⚔️
 
 ## What Awaits You? 🌌
