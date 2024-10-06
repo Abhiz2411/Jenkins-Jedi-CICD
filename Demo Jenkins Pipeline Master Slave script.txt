@@ -1,0 +1,34 @@
+### Demo Jenkins Pipeline script utilizing jenkins master slave architecture ###
+
+pipeline{
+    agent {label 'slave1'}
+    
+    stages{
+        stage('SCM-checkout'){
+            steps{
+                echo 'SCM checkout stage start'
+                git 'https://github.com/SA-AWS-DevOps-July24/java-mvn-springbootapp.git'
+                echo 'SCM checkout complete'
+            }
+        }
+        stage('Maven_build'){
+            steps{
+                echo 'Maven build stage start'
+                sh 'mvn clean package'
+                echo 'Maven build complete'
+            }
+        }
+        stage('Test_cases'){
+            steps{
+                echo 'Test cases stage start'
+                echo 'Test cases stage complete'
+            }
+        }
+        stage('Deployement_stage'){
+            steps{
+                echo 'Deployement stage start'
+                echo 'Deployement stage complete'
+            }
+        }
+    }
+}

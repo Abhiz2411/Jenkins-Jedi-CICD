@@ -1,0 +1,116 @@
+### How to create Jenkins Master Slave configuration using EC2 ###
+
+## Refer to recording of lecture dated 6thSeptember2024 for slave node configuration
+## Refer https://www.youtube.com/watch?v=NVaP8qtLm6Q for one shot jenkins understanding 
+
+Step 1. Setup Jenkins Master node on a EC2 instance:
+-->
+	1) Launch an EC2 instance:
+		AMI=22.04, t2.medium with Security group having inbound rule for SSH i.e. port = 22, Jenkins web app
+		port(Java applications port) i.e. port = 8080. All traffic should be allowed to these 2 ports(22,8080)
+	
+	2) Install Jenkins:
+		Do all the process required to install Jenkins on the instance by first installing prerequisite and 
+		then actual Jenkins
+		
+	3) Enable Jenkins on startup
+	
+	4) Setup the Jenkins Master Node:
+		First time installation and usage will ask for Jenkins setup. Complete the setup. Download and install
+		all recommended plugins
+	
+	(Below step is not mandatory)
+	5) Enable matrix based user authentication:
+		In the Jenkins settings enable matrix based user authentication
+		
+		
+Step 2. Install build tools on Jenkins slave node on a different EC2 instance:
+-->
+	1) Launch an EC2 instance:
+		AMI=22.04, t2.micro with Security group having inbound rule for SSH i.e. port = 22, Jenkins web app
+		port(Java applications port) i.e. port = 8080. All traffic should be allowed to these 2 ports(22,8080)
+		
+	2) Install required build tool:
+		Jenkins Master node is used to manage overall jenkins ops., Scheduling jobs, distributing work to slaves,
+		etc. So Jenkins will only be installed on Jenkins Master node host instance. On the slave machines only
+		required build tools are installed. Slave node instance is to perform tasks assigned by the msater 
+		instance. This architecture results in parallel executions of multiple jobs and improving scalablity 
+		and performance
+		For our use case we will be installing 'Maven' build tool. using below steps:
+		```
+		sudo -i
+		apt update -y
+		apt update -y 
+		apt install openjdk-17-jre -y
+		java -version
+		apt install git -y
+		apt install maven -y
+		```
+		
+	3) Create a dedicated Linux user to perform assigned builds/tasks:
+		Create User in Jenkins Slave Machine & Create SSH Keys
+		```
+		useradd devopsadmin -s /bin/bash -m -d /home/devopsadmin
+		su - devopsadmin
+		ssh-keygen -t ecdsa -b 521
+		ls ~/.ssh 
+		cd .ssh
+		cat id_ecdsa.pub > authorized_keys
+		chmod 600 /home/devopsadmin/.ssh/*
+		```
+		
+		
+Step 3. Attach Jenkins Slave node EC2 instance to Jenkins Master node EC2 instance:
+-->
+	1) Login to Jenkins(Master node)
+	
+	2) Click on 'Manage Jenkins'
+		Manage Jenkins > New Node
+		
+	3) Give appropriate Node name and set as permenant agent:
+		Give appropriate Node name like 'SlaveNode1' and select as permenant agent and click next to continue
+		
+	4) Fill neccessary details in Node configuration page
+		## REFER TO THE SS/VIDEO OF IDEAL NODE CONFIGURATIONS IN THE SAME DIR OF THE NOTES ##
+		i) Fill desccription as 'Slave node 1 for making maven builds'
+		ii) Fill number of executors as per need. I filled it to '2'
+		iii) Remote root directory: '/home/devopsadmin'
+		iv) Labels: 'slave1'
+		v) Usage: Default
+		vi) Launch method: 'Launch Agent vai SSH'
+		vii) Host: Private IP address of slave node EC2 instance
+		viii) Credentials
+		--> Click on 'Add'
+			viii.i) Domain: 'Global credentials unrestricted'
+			viii.ii) Kind: 'SSH username with private key'
+			viii.iii) Scope: 'Global(Jenkins,nodes,items,all child items,etc)'
+			viii.iv) ID: Anything e.g. 'slavenode1cred'
+			viii.v) Description: Anything e.g. 'slavenode1cred'
+			viii.vi) Username: User name of the user in slave node EC2 linux instance that we created for build
+								activities. In our case 'devopsadmin'
+			viii.vii) Private key: Check 'Enter Directly'
+			viii.viii) Add private key
+			viii.ix) Copy the 'private key' from the desired user from the slave node EC2 instance by SSH into
+					 instance and then login as root using `sudo -i` then login as that user `su - devopsadmin`
+					 then changing directory to .ssh by `cd .ssh` and copying private key after entring cmd 
+					 `cat id_ecdsa`
+			viii.x) Paste the copied private of dedicated user 
+			viii.xi) Enter passphrase if any
+			viii.xii) Click 'Save' to continue
+		ix) Select the newly created credentials: 'devopsadmin(slavenode1cred)'
+		x) Host Key Verification Strategy: 'Manually trusted key Verification Strategy'
+		xi) Require manual verification of initial connection: Enable this checkbox
+		xii) Click on 'save' to continue
+		
+
+Step 4: Complete manual verification of initial connection to slave node:
+-->
+	1) Navigate to 'Dashboard > Manage Jenkins > Nodes'
+	2) Click on the newly created Jenkins node 
+	3) On the left pane select 'Trust SSH host key'
+	4) Click 'Yes' to verify the host key
+
+And our slave node is ready!!!
+
+---------------------------------------------------------------------------------------------------------------------------------
+

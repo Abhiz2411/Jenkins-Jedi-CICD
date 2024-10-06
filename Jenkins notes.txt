@@ -1,0 +1,46 @@
+### Jenkin Notes
+
+Q. What is Jenkins?
+--> Jenkins is basically an build and release orchestration tool
+
+----------------------------------------------------------------------------------------------------------------------------
+
+### Jenkins in short 
+--> 
+	Jenkins is an open-source automation server widely used for Continuous Integration (CI) and Continuous 
+	Delivery (CD) in DevOps pipelines. It helps automate the process of building, testing, and deploying code 
+	changes in a software project, making the development cycle faster and more efficient.
+
+Q. Why is Jenkins Required?
+--> 
+	1) Automation of Repetitive Tasks: Jenkins automates tasks like code integration, testing, and deployment, 
+									reducing manual efforts and human error.
+
+	2) Continuous Integration: Jenkins continuously merges developers' code into a shared repository, allowing 
+								for early detection of issues and easier collaboration.
+								
+								Build -> Test -> Merge
+
+	3) Continuous Delivery/Deployment: Jenkins automates the delivery of code changes to production environments, 
+										ensuring faster and safer releases.
+								
+								Continuous Delivery: Ready for production
+								
+								Continuous Deployment: Automatically deploy to production 
+	
+	4) Extensibility: Jenkins supports a wide range of plugins, allowing customization for different tools and 
+						technologies.
+
+	5) Easy Integration: Jenkins integrates with many version control systems (like Git), build tools, and cloud
+							providers, making it highly flexible.
+
+
+Q. Why Jenkins is Needed:
+-->
+	1) Automates repetitive tasks in software development.
+	2) Enables fast and frequent delivery of software updates.
+	3) Helps in detecting and fixing issues early in the development process.
+	4) Supports a continuous feedback loop for developers and teams.
+	
+----------------------------------------------------------------------------------------------------------------------------
+

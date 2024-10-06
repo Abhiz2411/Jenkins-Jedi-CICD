@@ -1,0 +1,96 @@
+### How is deployement done 
+--> 
+	It is simply cpoying artifacts from source machine to target machine
+	
+	Steps:
+	1) Launch a VM with required spec. for setting up Jenkins master instance	
+	2) Setup Jenkins master on the instance
+		This instance will just create CI-CD pipelines and manage jenkins
+		
+	3) Launch a/multiple VM with required spec. for setting up Jenkins slave instance
+	4) Setup Jenkins slave node on the instance/es
+		These instances will be responsible for actual builds 
+	5) Attach the Jenkins slave nodes to Jenkins master
+
+	6) Launch a VM with req. spec. for setting up the target server instance(Test/Prod/UAT)
+	7) Install and setup required server configurations with proper user in Linux(for e.g. Tomcat,Nginx,etc.)
+
+	8) Install 'Publish over SSH' plugin on Jenkins master from available plugins and safe restart jenkins once 
+		finished installing. Verify installation from installed plugins
+	9) Navigate to  'Dashboard > Manage Jenkins > System'. Scroll down to 'Publish over SSH' part and add ssh 
+		servers by clicking on 'Add' button below 'SSH servers' 
+		--> 
+			i] Name: Any suitable name for reference for eg. Tomcat_server_1
+			ii] Hostname: Private IP address of server instance
+			iii] Username: Username with which authorized keys are made for eg. devopsadmin
+			iv] Remote directory: Location where we want to save our artifacts for eg. /opt/tomcat/webapps
+			v] Advanced: 
+				- Tick the 'Use password authentication, or use a different key'
+				- Enter the private key for the user from the server instance
+			vi] Test configuration. If success then proceed 
+	10) Save the settings
+	
+	11) Create/Modify existing pipeline project for deployement stage. Write the groovy script using the
+		'pipeline syntax' with 'sshPublisher'
+		-->
+			i] Name: Select the name of server for eg. Tomcat_servver 
+			ii] Source files: Path to artificat for eg. target/*.war
+			iii] Remove prefix: Everything in source files path except artifact for eg. target/
+			iv] Remote diorectory: Since remote directory already set in Jenkis global settings of this server
+									the path will be same so '.'
+			v] Generate pipeline script	
+	12) Paste the generated code using script tag under steps in Deployment stage for eg.
+		-->
+			stage('Deployement_stage'){
+            steps{
+                script{
+                    sshPublisher(publishers: [sshPublisherDesc(configName: 'Tomcat_server_1', transfers: [sshTransfer(cleanRemote: false, excludes: '', execCommand: '', execTimeout: 120000, flatten: false, makeEmptyDirs: false, noDefaultExcludes: false, patternSeparator: '[, ]+', remoteDirectory: '.', remoteDirectorySDF: false, removePrefix: 'target/', sourceFiles: 'target/*.war')], usePromotionTimestamp: false, useWorkspaceInPromotion: false, verbose: false)])
+                }
+            }
+        }
+	13) Apply and Save
+	14) The project is ready to build now!!!
+	
+	## NOTE: We can also couple this with GitHub SCM polling ##
+	
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+## Final Pipeline script
+
+pipeline{
+    agent {label 'slave1'}
+    tools {git 'Default'}
+    
+    stages{
+        stage('SCM-checkout'){
+            steps{
+                echo 'SCM checkout stage start'
+                git 'https://github.com/Abhiz2411/java-mvn-jenkins-github-webhook-pollscm-test-repo'
+                echo 'SCM checkout complete'
+            }
+        }
+        stage('Maven_build'){
+            steps{
+                echo 'Maven build stage start'
+                sh 'mvn clean package'
+                echo 'Maven build complete'
+            }
+        }
+        stage('Test_cases'){
+            steps{
+                echo 'Test cases stage start'
+                echo 'Test cases stage complete'
+            }
+        }
+        stage('Deployement_stage'){
+            steps{
+                script{
+                    sshPublisher(publishers: [sshPublisherDesc(configName: 'Tomcat_server_1', transfers: [sshTransfer(cleanRemote: false, excludes: '', execCommand: '', execTimeout: 120000, flatten: false, makeEmptyDirs: false, noDefaultExcludes: false, patternSeparator: '[, ]+', remoteDirectory: '.', remoteDirectorySDF: false, removePrefix: 'target/', sourceFiles: 'target/*.war')], usePromotionTimestamp: false, useWorkspaceInPromotion: false, verbose: false)])
+                }
+            }
+        }
+    }
+}
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------
+

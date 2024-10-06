@@ -1,0 +1,60 @@
+### How to setup GitHub Weebhook and Poll SCM in Jenkins ###
+
+Setting up GitHub Webhook and Poll SCM in Jenkins
+GitHub Webhook
+
+In Jenkins:
+
+Go to job configuration
+Check "GitHub hook trigger for GITScm polling" under Build Triggers
+
+
+In GitHub:
+
+Go to repository settings
+Click on Webhooks > Add webhook
+Payload URL: http://your-jenkins-url/github-webhook/
+Content type: application/json
+Select events to trigger webhook (usually just push events)
+
+
+Test:
+
+Make a commit and push to GitHub
+Jenkins should automatically trigger a build
+
+
+
+Poll SCM
+
+In Jenkins job configuration:
+
+Check "Poll SCM" under Build Triggers
+Set schedule using cron syntax, e.g., H/5 * * * * for every 5 minutes
+
+
+How it works:
+
+Jenkins periodically checks the repository for changes
+If changes detected, it triggers a build
+
+
+
+Comparison
+
+Webhook:
+
+Faster, immediate triggers
+Requires Jenkins to be accessible from GitHub
+More efficient, only triggers when needed
+
+
+Poll SCM:
+
+Works behind firewalls
+Can cause unnecessary load on Jenkins and GitHub
+Delay between commit and build start
+
+
+
+Choose based on your infrastructure and requirements.
