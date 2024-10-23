@@ -1,0 +1,91 @@
+### Output: 
+-->
+	Will be able to build docker image using Jenkins
+	Will be able to login dockerhub using Jenkins
+	Will be able to push the built image to Dockerhub using Jenkins
+	
+### Steps:
+-->
+	1) First navigate to DockerHub and then to the account settings and create a new access token and copy the 
+		acess token password
+	
+	2) Now navigate to 'credentials' of Jenkins master node from jenkins dashboard and new credentials.
+		a) Fill in the DockerHub username as Username 
+		b) Paste the acess token generated password 
+		c) Give appropriate id and description
+	
+	3) Open the pipeline script of the project
+		a) 
+			environment{
+				DOCKERHUB_CRED=credentials('docker-hub_cred')
+			}
+			
+		b) 
+			stage('Docker_build'){
+				steps{
+					echo 'Docker build command start'
+					sh 'docker build -t abhiz2411/tomcat_web_img:${BUILD_NUMBER} .'
+					sh 'docker images'
+					echo 'Docker image creation complete'
+				}
+			}
+			stage('Dockerhub_login'){
+				steps{
+					echo 'login to DockerHub process start'
+					sh 'echo $DOCKERHUB_CRED_PSW | docker login -u $DOCKERHUB_CRED_USR --password-stdin'
+					echo 'Docker login complete'
+				}
+			}
+			stage('Docker_image_publish'){
+				steps{
+					echo 'Docker image publish process start'
+					sh 'docker push abhiz2411/tomcat_web_img:${BUILD_NUMBER}'
+				}
+			}
+		
+	4) Final pipeline code:
+	pipeline{
+		agent {label 'slave1'}
+		
+		environment{
+			DOCKERHUB_CRED=credentials('docker-hub_cred')
+		}
+		
+		stages{
+			stage('SCM-checkout'){
+				steps{
+					echo 'SCM checkout stage start'
+					git 'https://github.com/Abhiz2411/java-mvn-jenkins-github-webhook-pollscm-test-repo.git'
+					echo 'SCM checkout complete'
+				}
+			}
+			stage('Maven_build'){
+				steps{
+					echo 'Maven build stage start'
+					sh 'mvn clean package'
+					echo 'Maven build complete'
+				}
+			}
+			stage('Docker_build'){
+				steps{
+					echo 'Docker build command start'
+					sh 'docker build -t abhiz2411/tomcat_web_img:${BUILD_NUMBER} .'
+					sh 'docker images'
+					echo 'Docker image creation complete'
+				}
+			}
+			stage('Dockerhub_login'){
+				steps{
+					echo 'login to DockerHub process start'
+					sh 'echo $DOCKERHUB_CRED_PSW | docker login -u $DOCKERHUB_CRED_USR --password-stdin'
+					echo 'Docker login complete'
+				}
+			}
+			stage('Docker_image_publish'){
+				steps{
+					echo 'Docker image publish process start'
+					sh 'docker push abhiz2411/tomcat_web_img:${BUILD_NUMBER}'
+				}
+			}
+		}
+	}
